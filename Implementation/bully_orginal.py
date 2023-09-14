@@ -100,6 +100,7 @@ class Process:
                     self.start_election()
 
             else:
+                # perhaps call message_handler here with argumenyts process_id and msg_type to reduce complexity
                 if msg_type == ELECTION:
                     print(f"{self._id} received election from {process_id} \n")
                     if not self.state == DEAD:
