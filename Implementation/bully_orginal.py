@@ -11,7 +11,9 @@ TIMEOUT = 2
 ALIVE = 0
 COORDINATOR = 1
 WAITING_FOR_OK = 2
-DEAD = 3
+ELECTING = 3
+DEAD = 4
+
 
 # Message types
 ELECTION = 1
@@ -29,7 +31,8 @@ class Process:
         self.state = ALIVE
         self.processes = []
         self.oks = 0
-        self.coordinater = False
+        self.coordinater = False    #what is this for?
+        self.coordinator_msg_sent = False
 
     def start_thread(self):
         """Start the message handler thread"""
@@ -73,13 +76,41 @@ class Process:
                         print(f"{self._id} received coordinator from {process_id}")
 
                     else:
-                        pass                        
+                        pass
+
+    def state_machine(self):
+        """State machine for process"""
+        while not self.stop_worker.is_set():
+            if self.state == ALIVE:
+                pass
+
+            elif self.state == COORDINATOR:
+                if not self.coordinator_msg_sent:
+                    self.send_coordinator()
+
+            elif self.state == WAITING_FOR_OK:
+                start = time.time()
+                while self.state == WAITING_FOR_OK and self.oks == 0:
+                    end = time.time()
+                    if end - start > TIMEOUT:
+                        self.state = COORDINATOR
+                        break
+
+            elif self.state == ELECTING:
+                self.start_election()
+
+            elif self.state == DEAD:
+                pass
+            
+            else:
+                pass
 
     def send_coordinator(self):
         """Send coordinator message to all processes"""
         print(f"{self._id} sending coordinator to all processes")
         for process in self.processes:
-            process.enqueue_message(900, COORDINATOR)
+            process.enqueue_message(self._id, COORDINATOR)
+        self.coordinator_msg_sent = True
 
     # Starts an election
     def start_election(self):
