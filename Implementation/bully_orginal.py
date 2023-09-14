@@ -78,32 +78,45 @@ class Process:
                     else:
                         pass
 
+    # trying to implement the state machine (NOT DONE)
     def state_machine(self):
         """State machine for process"""
         while not self.stop_worker.is_set():
-            if self.state == ALIVE:
-                pass
+            try:
+                process_id, msg_type = self.message_queue.get(timeout=1)
+            except Empty:
+                if self.state == ALIVE or self.state == DEAD: pass
+                elif self.state == COORDINATOR:
+                    if not self.coordinator_msg_sent:
+                        self.send_coordinator()
+                elif self.state == WAITING_FOR_OK:
+                    start = time.time()
+                    while self.state == WAITING_FOR_OK and self.oks == 0:
+                        end = time.time()
+                        if end - start > TIMEOUT:
+                            self.state = COORDINATOR
+                            break
+                elif self.state == ELECTING:
+                    self.start_election()
 
-            elif self.state == COORDINATOR:
-                if not self.coordinator_msg_sent:
-                    self.send_coordinator()
-
-            elif self.state == WAITING_FOR_OK:
-                start = time.time()
-                while self.state == WAITING_FOR_OK and self.oks == 0:
-                    end = time.time()
-                    if end - start > TIMEOUT:
-                        self.state = COORDINATOR
-                        break
-
-            elif self.state == ELECTING:
-                self.start_election()
-
-            elif self.state == DEAD:
-                pass
-            
             else:
-                pass
+                if msg_type == ELECTION:
+                    print(f"{self._id} received election from {process_id} \n")
+                    if not self.state == DEAD:
+                        process = self.get_process(process_id)
+                        process.enqueue_message(self._id, OK)
+                        print(f"{self._id} sent OK to {process_id} \n")
+                        self.start_election()
+                elif msg_type == OK:
+                    self.oks += 1
+                    print(f"{self._id} received OK from {process_id}")
+
+                elif msg_type == COORDINATOR:
+                    print(f"{self._id} received coordinator from {process_id}")
+
+                else:
+                    pass
+
 
     def send_coordinator(self):
         """Send coordinator message to all processes"""
