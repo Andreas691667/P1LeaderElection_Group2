@@ -1,24 +1,22 @@
-from enum import Enum
-from dataclasses import dataclass
+# from enum import Enum
+# from dataclasses import dataclass
 from threading import Event, Thread
 from queue import Empty, Queue
 import time
 
+# Time interval for becoming coordinator
+TIMEOUT = 2
 
-@dataclass
-class ProcessStates(Enum):
-    """states that processes can take on"""""
-    ALIVE = 1
-    DEAD = 2
+# Process states
+ALIVE = 0
+COORDINATOR = 1
+WAITING_FOR_OK = 2
+DEAD = 3
 
-
-@dataclass
-class MessageTypes(Enum):
-    """types of messages that can be sent"""
-    ELECTION = 1
-    OK = 2
-    COORDINATOR = 3
-
+# Message types
+ELECTION = 1
+OK = 2
+COORDINATOR = 3
 
 class Process:
     """Processes in the system"""
@@ -27,9 +25,8 @@ class Process:
         self.message_thread = Thread(target=self.message_handler, daemon=True)
         self.stop_worker = Event()
         self.message_queue = Queue()  # tuple[sender_id, type]
-
         self._id = _id
-        self.state = ProcessStates.ALIVE
+        self.state = ALIVE
         self.processes = []
         self.oks = 0
         self.coordinater = False
@@ -41,7 +38,7 @@ class Process:
     def kill(self):
         """Kill the process"""
         self.coordinater = False
-        self.state = ProcessStates.DEAD
+        self.state = DEAD
 
     def get_id(self):
         return self._id
@@ -61,29 +58,28 @@ class Process:
             except Empty:
                 pass
             else:
-                match msg_type:
-                    case MessageTypes.ELECTION:
-                        print(f"{self._id} received election from {process_id} \n")
-                        if not self.state == ProcessStates.DEAD:
-                            process = self.get_process(process_id)
-                            process.enqueue_message(self._id, MessageTypes.OK)
-                            self.start_election()
-
-                    case MessageTypes.OK:
-                        self.oks = self.oks + 1
+                if msg_type == ELECTION:
+                    print(f"{self._id} received election from {process_id} \n")
+                    if not self.state == DEAD:
+                        process = self.get_process(process_id)
+                        process.enqueue_message(self._id, OK)
+                        print(f"{self._id} sent OK to {process_id} \n")
+                        self.start_election()
+                    elif msg_type == OK:
+                        self.oks += 1
                         print(f"{self._id} received OK from {process_id}")
 
-                    case MessageTypes.COORDINATOR:
-                        print(
-                            f"{self._id} received coordinator from {process_id}")
+                    elif msg_type == COORDINATOR:
+                        print(f"{self._id} received coordinator from {process_id}")
 
-                    case _:
-                        pass
+                    else:
+                        pass                        
 
     def send_coordinator(self):
         """Send coordinator message to all processes"""
+        print(f"{self._id} sending coordinator to all processes")
         for process in self.processes:
-            process.enqueue_message(self._id, MessageTypes.COORDINATOR)
+            process.enqueue_message(900, COORDINATOR)
 
     # Starts an election
     def start_election(self):
@@ -91,26 +87,26 @@ class Process:
         for process in self.processes:
             if process.get_id() > self._id:
                 print(f"{self._id} sending election to {process.get_id()}")
-                process.enqueue_message(self._id, MessageTypes.ELECTION)
+                process.enqueue_message(self._id, ELECTION)
 
-        # Change state to waitForOks
+        self.state = WAITING_FOR_OK
 
-        # check for oks in a while loop for a maximum of 5 seconds
+        # check for oks in a while loop for a maximum of TIMEOUT seconds
         # if no oks, send coordinator msg to all processes
         start = time.time()
         while self.oks == 0:
             end = time.time()
-            if end - start > 5:
+            if end - start > TIMEOUT:
                 self.coordinater = True
                 self.send_coordinator()
                 break
 
         # if we received any oks, do nothing. somebody else took over
-        # print(f"{self._id} received no oks")
-
+        # reset oks
+        self.oks = 0
 
 if __name__ == "__main__":
-    # create 5 processes and put them in a list
+    # create N processes and put them in a list
     N = 3
     all_processes = []
     for i in range(N):
@@ -120,6 +116,9 @@ if __name__ == "__main__":
     # pass them as references to each process
     for i in range(N):
         all_processes[i].processes = all_processes
+
+    # set process N as coordinator
+    all_processes[N].state = COORDINATOR
 
     # start all all_processes
     for p in all_processes:
@@ -131,6 +130,3 @@ if __name__ == "__main__":
 
     while True:
         pass
-
-
-# Implement messages/oks with a state machine for each process
