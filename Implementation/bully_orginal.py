@@ -20,18 +20,19 @@ ELECTION = 1
 OK = 2
 COORDINATOR = 3
 
+
 class Process:
     """Processes in the system"""
 
     def __init__(self, _id):
-        self.message_thread = Thread(target=self.message_handler, daemon=True)
+        self.message_thread = Thread(target=self.state_machine, daemon=True)
+
         self.stop_worker = Event()
         self.message_queue = Queue()  # tuple[sender_id, type]
         self._id = _id
         self.state = ALIVE
         self.processes = []
         self.oks = 0
-        self.coordinater = False    #what is this for?
         self.coordinator_msg_sent = False
 
     def start_thread(self):
@@ -52,31 +53,24 @@ class Process:
     def enqueue_message(self, sender_id, msg_type):
         self.message_queue.put((sender_id, msg_type))
 
-    def message_handler(self):
+    def message_handler(self, process_id, msg_type):
         """"Receive message from another process"""
-        # worker method for thread
-        while not self.stop_worker.is_set():
-            try:
-                process_id, msg_type = self.message_queue.get(timeout=1)
-            except Empty:
-                pass
-            else:
-                if msg_type == ELECTION:
-                    print(f"{self._id} received election from {process_id} \n")
-                    if not self.state == DEAD:
-                        process = self.get_process(process_id)
-                        process.enqueue_message(self._id, OK)
-                        print(f"{self._id} sent OK to {process_id} \n")
-                        self.start_election()
-                    elif msg_type == OK:
-                        self.oks += 1
-                        print(f"{self._id} received OK from {process_id}")
+        if msg_type == ELECTION:
+            if not self.state == DEAD:
+                print(f"{self._id} received election from {process_id} \n")
+                process = self.get_process(process_id)
+                process.enqueue_message(self._id, OK)
+                print(f"{self._id} sent OK to {process_id} \n")
+                self.start_election()
+        elif msg_type == OK:
+            self.oks += 1
+            print(f"{self._id} received OK from {process_id} and current oks is {self.oks} \n")
 
-                    elif msg_type == COORDINATOR:
-                        print(f"{self._id} received coordinator from {process_id}")
+        elif msg_type == COORDINATOR:
+            print(f"{self._id} received coordinator from {process_id} \n")
 
-                    else:
-                        pass
+        else:
+            pass
 
     # trying to implement the state machine (NOT DONE)
     def state_machine(self):
@@ -84,75 +78,48 @@ class Process:
         while not self.stop_worker.is_set():
             try:
                 process_id, msg_type = self.message_queue.get(timeout=1)
+
             except Empty:
-                if self.state == ALIVE or self.state == DEAD: pass
+                if self.state == ALIVE or self.state == DEAD:
+                    pass
                 elif self.state == COORDINATOR:
                     if not self.coordinator_msg_sent:
                         self.send_coordinator()
                 elif self.state == WAITING_FOR_OK:
-                    start = time.time()
-                    while self.state == WAITING_FOR_OK and self.oks == 0:
-                        end = time.time()
-                        if end - start > TIMEOUT:
-                            self.state = COORDINATOR
-                            break
+                    if self.oks > 0:
+                        self.oks = 0
+                        self.state = ALIVE
+                    else:
+                        self.send_coordinator()
+                        
                 elif self.state == ELECTING:
                     self.start_election()
 
             else:
-                # perhaps call message_handler here with argumenyts process_id and msg_type to reduce complexity
-                if msg_type == ELECTION:
-                    print(f"{self._id} received election from {process_id} \n")
-                    if not self.state == DEAD:
-                        process = self.get_process(process_id)
-                        process.enqueue_message(self._id, OK)
-                        print(f"{self._id} sent OK to {process_id} \n")
-                        self.start_election()
-                elif msg_type == OK:
-                    self.oks += 1
-                    print(f"{self._id} received OK from {process_id}")
-
-                elif msg_type == COORDINATOR:
-                    print(f"{self._id} received coordinator from {process_id}")
-
-                else:
-                    pass
-
+                self.message_handler(process_id, msg_type)
 
     def send_coordinator(self):
         """Send coordinator message to all processes"""
-        print(f"{self._id} sending coordinator to all processes")
-        for process in self.processes:
+        print(f"{self._id} sending coordinator to all processes \n")
+        other_processes = [process for process in self.processes if process.get_id() != self._id]
+        for process in other_processes:
             process.enqueue_message(self._id, COORDINATOR)
         self.coordinator_msg_sent = True
+        self.state = COORDINATOR
 
     # Starts an election
     def start_election(self):
         """Send election msg to processes with higher id's"""
-        for process in self.processes:
-            if process.get_id() > self._id:
-                print(f"{self._id} sending election to {process.get_id()}")
-                process.enqueue_message(self._id, ELECTION)
+        higher_priority_processes = [process for process in self.processes if process.get_id() > self._id]
+        for process in higher_priority_processes:
+            print(f"{self._id} sending election to {process.get_id()} \n")
+            process.enqueue_message(self._id, ELECTION)
 
         self.state = WAITING_FOR_OK
 
-        # check for oks in a while loop for a maximum of TIMEOUT seconds
-        # if no oks, send coordinator msg to all processes
-        start = time.time()
-        while self.oks == 0:
-            end = time.time()
-            if end - start > TIMEOUT:
-                self.coordinater = True
-                self.send_coordinator()
-                break
-
-        # if we received any oks, do nothing. somebody else took over
-        # reset oks
-        self.oks = 0
-
 if __name__ == "__main__":
     # create N processes and put them in a list
-    N = 3
+    N = 5
     all_processes = []
     for i in range(N):
         all_processes.append(Process(i))
@@ -163,15 +130,15 @@ if __name__ == "__main__":
         all_processes[i].processes = all_processes
 
     # set process N as coordinator
-    all_processes[N].state = COORDINATOR
+    all_processes[N-1].state = COORDINATOR
 
     # start all all_processes
     for p in all_processes:
         p.start_thread()
 
     # simulate a process dying and sending an election message
-    all_processes[2].kill()           # process 1 dies
-    all_processes[0].start_election() # process 2 starts election
+    all_processes[4].kill()           # process 1 dies
+    all_processes[0].start_election()  # process 2 starts election
 
     while True:
         pass
