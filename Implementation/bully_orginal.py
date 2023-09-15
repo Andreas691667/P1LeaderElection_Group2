@@ -2,7 +2,7 @@
 # from dataclasses import dataclass
 from threading import Event, Thread
 from queue import Empty, Queue
-import time
+# import time
 
 # Time interval for becoming coordinator
 TIMEOUT = 2
@@ -41,16 +41,19 @@ class Process:
 
     def kill(self):
         """Kill the process"""
-        self.coordinater = False
         self.state = DEAD
+        print(f"{self._id} is dead \n")
 
     def get_id(self):
+        """Get process id"""
         return self._id
 
     def get_process(self, _id):
+        """Get process object by id"""
         return self.processes[_id]
 
     def enqueue_message(self, sender_id, msg_type):
+        """Enqueue message to be processed by the state machine"""
         self.message_queue.put((sender_id, msg_type))
 
     def message_handler(self, process_id, msg_type):
@@ -64,15 +67,12 @@ class Process:
                 self.start_election()
         elif msg_type == OK:
             self.oks += 1
-            print(f"{self._id} received OK from {process_id} and current oks is {self.oks} \n")
+            print(
+                f"{self._id} received OK from {process_id} and current oks is {self.oks} \n")
 
         elif msg_type == COORDINATOR:
             print(f"{self._id} received coordinator from {process_id} \n")
 
-        else:
-            pass
-
-    # trying to implement the state machine (NOT DONE)
     def state_machine(self):
         """State machine for process"""
         while not self.stop_worker.is_set():
@@ -91,7 +91,7 @@ class Process:
                         self.state = ALIVE
                     else:
                         self.send_coordinator()
-                        
+
                 elif self.state == ELECTING:
                     self.start_election()
 
@@ -101,7 +101,8 @@ class Process:
     def send_coordinator(self):
         """Send coordinator message to all processes"""
         print(f"{self._id} sending coordinator to all processes \n")
-        other_processes = [process for process in self.processes if process.get_id() != self._id]
+        other_processes = [
+            process for process in self.processes if process.get_id() != self._id]
         for process in other_processes:
             process.enqueue_message(self._id, COORDINATOR)
         self.coordinator_msg_sent = True
@@ -110,12 +111,14 @@ class Process:
     # Starts an election
     def start_election(self):
         """Send election msg to processes with higher id's"""
-        higher_priority_processes = [process for process in self.processes if process.get_id() > self._id]
+        higher_priority_processes = [
+            process for process in self.processes if process.get_id() > self._id]
         for process in higher_priority_processes:
             print(f"{self._id} sending election to {process.get_id()} \n")
             process.enqueue_message(self._id, ELECTION)
 
         self.state = WAITING_FOR_OK
+
 
 if __name__ == "__main__":
     # create N processes and put them in a list
@@ -130,14 +133,14 @@ if __name__ == "__main__":
         all_processes[i].processes = all_processes
 
     # set process N as coordinator
-    all_processes[N-1].state = COORDINATOR
+    # all_processes[N-1].state = COORDINATOR
 
     # start all all_processes
     for p in all_processes:
         p.start_thread()
 
     # simulate a process dying and sending an election message
-    all_processes[4].kill()           # process 1 dies
+    # all_processes[4].kill()           # process 1 dies
     all_processes[0].start_election()  # process 2 starts election
 
     while True:
