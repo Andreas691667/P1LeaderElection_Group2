@@ -8,12 +8,12 @@ import time
 TIMEOUT = 2
 
 # Process states
-ALIVE = 0
+IDLE = 0
 COORDINATOR = 1
 WAITING_FOR_OK = 2
 ELECTING = 3
 DEAD = 4
-
+WAITING_FOR_COORDINATOR = 5
 
 # Message types
 ELECTION = 2
@@ -21,17 +21,20 @@ OK = 3
 COORDINATOR = 1
 
 
+
 class Process:
     """Processes in the system"""
+
     def __init__(self, _id):
         self.message_thread = Thread(target=self.state_machine, daemon=True)
         self.stop_worker = Event()
         self.message_queue = PriorityQueue()  # tuple[sender_id, type]
         self._id = _id
-        self.state = ALIVE  # initial state
+        self.state = IDLE  # initial state
         self.processes = []
         self.oks = 0
         self.coordinator_msg_sent = False
+        self.election_msg_sent = False
         self.msg_count = 0  # number of messages sent, metric for performance
 
     def start_thread(self):
@@ -65,18 +68,20 @@ class Process:
             process = self.get_process(process_id)
             process.enqueue_message(self._id, OK)
             print(f"{self._id} sent OK to {process_id} \n")
-            self.start_election()
-        
-        # respond to OK message by incrementing OK count and changing state (TODO: Should maybe not change here...)
-        elif msg_type == OK and self.state == WAITING_FOR_OK:
+            if not self.election_msg_sent:
+                self.start_election()
+                self.election_msg_sent = True
+
+        # respond to OK message by incrementing OK count
+        elif msg_type == OK:
             self.oks += 1
             print(
                 f"{self._id} received OK from {process_id} and current oks is {self.oks} \n")
-            self.state = ALIVE
 
         # accept coordinator message and do nothing
         elif msg_type == COORDINATOR:
             print(f"{self._id} received coordinator from {process_id} \n")
+            self.state = IDLE
 
     def state_machine(self):
         """State machine for process. Worker method"""
@@ -86,19 +91,19 @@ class Process:
                 msg_type, process_id = self.message_queue.get(timeout=1)
 
             except Empty:
-                # if state is ALIVE, do nothing
-                if self.state == ALIVE:
+                # if state is IDLE, do nothing
+                if self.state == IDLE or self.state == WAITING_FOR_COORDINATOR:
                     pass
                 # if state is COORDINATOR, send coordinator message to all processes if not already sent
                 elif self.state == COORDINATOR:
                     if not self.coordinator_msg_sent:
                         self.send_coordinator()
-                # if state is WAITING_FOR_OK, check if OK count is > 0, if so, change state to ALIVE, else send coordinator message
-                # TODO: Maybe this is superfluous, since we change state to ALIVE when we receive OK message but this is not ideal
+                # if state is WAITING_FOR_OK, check if OK count is > 0, if so, change state to IDLE, else send coordinator message
+                # TODO: Maybe this is superfluous, since we change state to IDLE when we receive OK message but this is not ideal
                 elif self.state == WAITING_FOR_OK:
                     if self.oks > 0:
                         self.oks = 0
-                        self.state = ALIVE
+                        self.state = WAITING_FOR_COORDINATOR
                     else:
                         self.send_coordinator()
 
@@ -152,20 +157,19 @@ if __name__ == "__main__":
         p.start_thread()
 
     # start election at highest priority process
-    all_processes[N-1].start_election()
+    # all_processes[N-1].start_election()
+
+    # all_processes[N-1].state = COORDINATOR
+
     # wait for convergence
-    time.sleep(2)
+    # time.sleep(2)
     # simulate process failure and new election
-    all_processes[4].kill()           # process 2 dies
+    # all_processes[4].kill()           # process 2 dies
     time.sleep(2)
     all_processes[0].start_election()  # process 1 starts election
 
     # wait for 5 seconds and then stop all all_processes
-    start = time.time()
-    while True:
-        time.sleep(.1)
-        if time.time() - start > 5:
-            break
+    start = time.sleep(5)
 
     msg_count = 0
     for p in all_processes:
