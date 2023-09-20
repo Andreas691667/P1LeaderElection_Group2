@@ -1,7 +1,7 @@
 # from enum import Enum
 # from dataclasses import dataclass
 from threading import Event, Thread
-from queue import Empty, PriorityQueue
+from queue import Empty, Queue
 import time
 
 # Time interval for becoming coordinator
@@ -20,15 +20,13 @@ ELECTION = 2
 OK = 3
 COORDINATOR = 1
 
-
-
 class Process:
     """Processes in the system"""
 
     def __init__(self, _id):
         self.message_thread = Thread(target=self.state_machine, daemon=True)
         self.stop_worker = Event()
-        self.message_queue = PriorityQueue()  # tuple[sender_id, type]
+        self.message_queue = Queue()  # tuple[sender_id, type]
         self._id = _id
         self.state = IDLE  # initial state
         self.processes = []
