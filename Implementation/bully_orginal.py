@@ -23,7 +23,6 @@ COORDINATOR = 1
 
 class Process:
     """Processes in the system"""
-
     def __init__(self, _id):
         self.message_thread = Thread(target=self.state_machine, daemon=True)
         self.stop_worker = Event()
@@ -33,7 +32,7 @@ class Process:
         self.processes = []
         self.oks = 0
         self.coordinator_msg_sent = False
-        self.msg_count = 0          # number of messages sent, metric for performance
+        self.msg_count = 0  # number of messages sent, metric for performance
 
     def start_thread(self):
         """Start the message handler thread"""
