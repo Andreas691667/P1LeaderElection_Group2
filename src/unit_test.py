@@ -1,9 +1,6 @@
 import unittest
 from bully_orginal import Process
 
-# unit tests for the methods in 'bully_original.py'
-
-
 class TestBullyOriginal(unittest.TestCase):
     """Test the methods in bully_original.py"""
     # create N processes and put them in a list
