@@ -144,7 +144,7 @@ class Process:
         other_processes = [
             process for process in self.processes if process.get_id() != self._id]
         for process in other_processes:
-            process.enqueue_message(self._id, COORDINATOR)
+            process.enqueue_message(self._id, I_AM_COORDINATOR)
         self.coordinator_msg_sent = True
 
     # Starts an election
