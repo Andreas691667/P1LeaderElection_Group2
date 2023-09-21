@@ -1,5 +1,8 @@
+import sys
+sys.path.append('../')
+from src.bully_orginal import Process as ProcessOriginal
+from src.bully_improved import Process as ProcessImproved
 import unittest
-from bully_orginal import Process
 
 class TestBullyOriginal(unittest.TestCase):
     """Test the methods in bully_original.py"""
@@ -7,7 +10,7 @@ class TestBullyOriginal(unittest.TestCase):
     N = 10
     all_processes = []
     for i in range(N):
-        all_processes.append(Process(i))
+        all_processes.append(ProcessOriginal(i))
 
     # inform each process of all the other all_processes by adding them to the process list and remove self from list
     for i in range(N):
@@ -56,7 +59,7 @@ class TestBullyImproved(unittest.TestCase):
     N = 10
     all_processes = []
     for i in range(N):
-        all_processes.append(Process(i))
+        all_processes.append(ProcessImproved(i))
 
     # inform each process of all the other processes
     for i in range(N):
