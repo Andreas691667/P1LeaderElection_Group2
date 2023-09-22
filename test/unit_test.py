@@ -1,7 +1,7 @@
 import sys
-sys.path.append('../')
-from src.bully_orginal import Process as ProcessOriginal
-from src.bully_improved import Process as ProcessImproved
+sys.path.append('../src/')
+from bully_orginal import Process as ProcessOriginal
+from bully_improved import Process as ProcessImproved
 import unittest
 
 class TestBullyOriginal(unittest.TestCase):
