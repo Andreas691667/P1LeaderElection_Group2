@@ -1,5 +1,5 @@
 # Process states
-IDLE = 0
+NORMAL = 0
 COORDINATOR = 1
 WAITING_FOR_OK = 2
 ELECTING = 3

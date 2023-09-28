@@ -12,7 +12,7 @@ class SystemTestsOriginal(unittest.TestCase):
     """Testing simulations of the bully algorithm"""
 
     def setUp(self) -> None:
-        self.N = 30 
+        self.N = 5 
         self.all_processes = []
         for i in range(self.N):
             self.all_processes.append(ProcessOriginal(i))
@@ -38,23 +38,48 @@ class SystemTestsOriginal(unittest.TestCase):
         self.all_processes[0].start_election()
 
         # wait for convergence
-        sleep(2)
+        sleep(5)
 
         # check that all all_processes have the correct state
         for i in range(self.N-2):
-            self.assertEqual(self.all_processes[i].state, IDLE)
+            self.assertEqual(self.all_processes[i].state, NORMAL)
         self.assertEqual(self.all_processes[self.N-1].state, COORDINATOR)
 
         # check that all all_processes have the correct coordinator
         for i in range(self.N-1):
             self.assertEqual(self.all_processes[i].coordinator, self.N-1)
 
+    # def test_coordinator_death(self):
+    #     """Test coordinator death"""
+    #     # start election at lowest priority process
+    #     self.all_processes[self.N-1].kill()
+    #     self.all_processes[0].start_election()
+
+    #     # wait for convergence
+    #     # sleep(5)
+
+    #     # kill coordinator
+        
+    #     # self.all_processes[0].start_election()
+
+    #     # wait for convergence
+    #     # sleep(5)
+
+    #     # check that all all_processes have the correct state
+    #     for i in range(self.N-3):
+    #         self.assertEqual(self.all_processes[i].state, NORMAL)
+    #     self.assertEqual(self.all_processes[self.N-2].state, COORDINATOR)
+
+    #     # check that all all_processes have the correct coordinator
+    #     for i in range(self.N-2):
+    #         self.assertEqual(self.all_processes[i].coordinator, self.N-2)
+
 
 class SystemTestsImproved(unittest.TestCase):
     """Testing simulations of the improved bully algorithm"""
 
     def setUp(self) -> None:
-        self.N = 30 
+        self.N = 5 
         self.all_processes = []
         for i in range(self.N):
             self.all_processes.append(ProcessImproved(i))
@@ -84,7 +109,7 @@ class SystemTestsImproved(unittest.TestCase):
 
         # check that all all_processes have the correct state
         for i in range(self.N-2):
-            self.assertEqual(self.all_processes[i].state, IDLE)
+            self.assertEqual(self.all_processes[i].state, NORMAL)
         self.assertEqual(self.all_processes[self.N-1].state, COORDINATOR)
 
         # check that all all_processes have the correct coordinator

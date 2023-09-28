@@ -30,7 +30,7 @@ class TestBullyOriginal(unittest.TestCase):
         for i in range(self.N):
             process = self.all_processes[i]
             self.assertEqual(process._id, i)
-            self.assertEqual(process.state, IDLE)
+            self.assertEqual(process.state, NORMAL)
             self.assertEqual(process.processes, self.all_processes)
             self.assertEqual(process.oks, 0)
             self.assertFalse(process.coordinator_msg_sent)
@@ -66,7 +66,7 @@ class TestBullyOriginal(unittest.TestCase):
             process = self.all_processes[i]
             self.assertEqual(process.message_queue.get(),
                              (1, self.N-1))
-            self.assertEqual(process.state, IDLE)
+            self.assertEqual(process.state, NORMAL)
 
     def test_kill(self):
         """Test kill() method"""
@@ -102,7 +102,7 @@ class TestBullyImproved(unittest.TestCase):
         for i in range(self.N):
             process = self.all_processes[i]
             self.assertEqual(process._id, i)
-            self.assertEqual(process.state, IDLE)
+            self.assertEqual(process.state, NORMAL)
             self.assertEqual(process.processes, self.all_processes)
             self.assertEqual(process.oks, [])
             self.assertFalse(process.coordinator_msg_sent)
@@ -141,7 +141,7 @@ class TestBullyImproved(unittest.TestCase):
             process = self.all_processes[i]
             self.assertEqual(process.message_queue.get(),
                              (1, self.N-1))
-            self.assertEqual(process.state, IDLE)
+            self.assertEqual(process.state, NORMAL)
 
     def test_kill(self):
         """Test kill() method"""

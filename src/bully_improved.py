@@ -15,7 +15,7 @@ class ProcessImproved:
         self.stop_worker = Event()
         self.message_queue = Queue()  # tuple[sender_id, type]
         self._id = _id
-        self.state = IDLE  # initial state
+        self.state = NORMAL  # initial state
         self.processes = []
         self.oks = []  # vector oks: Each entry is an id corresponding to a OK from that process
         self.coordinator_msg_sent = False
@@ -65,7 +65,7 @@ class ProcessImproved:
         # accept coordinator message and do nothing
         elif msg_type == I_AM_COORDINATOR:
             self.current_coordinator = process_id
-            self.state = IDLE
+            self.state = NORMAL
 
         elif msg_type == YOU_ARE_COORDINATOR:
             self.current_coordinator = self._id
@@ -79,15 +79,15 @@ class ProcessImproved:
                 msg_type, process_id = self.message_queue.get(timeout=1)
 
             except Empty:
-                # if state is IDLE, do nothing
-                if self.state == IDLE or self.state == WAITING_FOR_COORDINATOR:
+                # if state is NORMAL, do nothing
+                if self.state == NORMAL or self.state == WAITING_FOR_COORDINATOR:
                     pass
                 # if state is COORDINATOR, send coordinator message to all processes if not already sent
                 elif self.state == COORDINATOR:
                     if not self.coordinator_msg_sent:
                         self.send_coordinator()
-                # if state is WAITING_FOR_OK, check if OK count is > 0, if so, change state to IDLE, else send coordinator message
-                # TODO: Maybe this is superfluous, since we change state to IDLE when we receive OK message but this is not ideal
+                # if state is WAITING_FOR_OK, check if OK count is > 0, if so, change state to NORMAL, else send coordinator message
+                # TODO: Maybe this is superfluous, since we change state to NORMAL when we receive OK message but this is not ideal
                 elif self.state == WAITING_FOR_OK:
                     # Threshold calculation
                     time_passed = time.time() - self.election_start_time
