@@ -4,6 +4,7 @@ from bully_improved import ProcessImproved
 from bully_orginal import ProcessOriginal
 import unittest
 from time import sleep
+from types_ import *
 
 class SystemTestsOriginal(unittest.TestCase):
     """Testing simulations of the bully algorithm"""
@@ -39,8 +40,8 @@ class SystemTestsOriginal(unittest.TestCase):
 
         # check that all all_processes have the correct state
         for i in range(self.N-2):
-            self.assertEqual(self.all_processes[i].state, 0)
-        self.assertEqual(self.all_processes[self.N-1].state, 1)
+            self.assertEqual(self.all_processes[i].state, IDLE)
+        self.assertEqual(self.all_processes[self.N-1].state, COORDINATOR)
 
         # check that all all_processes have the correct coordinator
         for i in range(self.N-1):
@@ -80,8 +81,8 @@ class SystemTestsImproved(unittest.TestCase):
 
         # check that all all_processes have the correct state
         for i in range(self.N-2):
-            self.assertEqual(self.all_processes[i].state, 0)
-        self.assertEqual(self.all_processes[self.N-1].state, 1)
+            self.assertEqual(self.all_processes[i].state, IDLE)
+        self.assertEqual(self.all_processes[self.N-1].state, COORDINATOR)
 
         # check that all all_processes have the correct coordinator
         for i in range(self.N-1):

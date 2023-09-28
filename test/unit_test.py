@@ -3,6 +3,7 @@ import sys
 sys.path.insert(0, "./src")
 from bully_orginal import ProcessOriginal
 from bully_improved import ProcessImproved
+from types_ import *
 
 
 
@@ -56,7 +57,7 @@ class TestBullyOriginal(unittest.TestCase):
             process = self.all_processes[i]
             self.assertEqual(process.message_queue.get(),
                              (1, self.N-1))
-            self.assertEqual(process.state, 0)
+            self.assertEqual(process.state, IDLE)
 
 # TODO: Are we able to write test for the 'start_election()' method?
 
@@ -112,7 +113,7 @@ class TestBullyImproved(unittest.TestCase):
             process = self.all_processes[i]
             self.assertEqual(process.message_queue.get(),
                              (1, self.N-1))
-            self.assertEqual(process.state, 0)
+            self.assertEqual(process.state, IDLE)
 
 
 if __name__ == '__main__':

@@ -2,23 +2,8 @@
 # from dataclasses import dataclass
 from threading import Event, Thread
 from queue import Empty, Queue
+from types_ import *
 import time
-
-# Time interval for becoming coordinator
-TIMEOUT = 2
-
-# Process states
-IDLE = 0
-COORDINATOR = 1
-WAITING_FOR_OK = 2
-ELECTING = 3
-DEAD = 4
-WAITING_FOR_COORDINATOR = 5
-
-# Message types
-ELECTION = 2
-OK = 3
-I_AM_COORDINATOR = 1
 
 class ProcessOriginal:
     """Processes in the system"""

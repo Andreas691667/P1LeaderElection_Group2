@@ -3,23 +3,8 @@
 from threading import Event, Thread
 from queue import Empty, PriorityQueue
 import time
+from types_ import *
 
-# Time interval for becoming coordinator
-THRESHOLD = 2
-
-# Process states
-IDLE = 0
-COORDINATOR = 1
-WAITING_FOR_OK = 2
-ELECTING = 3
-DEAD = 4
-WAITING_FOR_COORDINATOR = 5
-
-# Message types
-ELECTION = 2
-OK = 3
-I_AM_COORDINATOR = 1
-YOU_ARE_COORDINATOR = 4
 
 
 class ProcessImproved:
@@ -49,7 +34,6 @@ class ProcessImproved:
         """Kill the process by setting state and stopiing worker thread"""
         self.state = DEAD
         self.stop_worker.set()
-        print(f"{self._id} is dead \n")
 
     def get_id(self):
         """Get process id"""
