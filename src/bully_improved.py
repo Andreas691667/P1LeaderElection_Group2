@@ -98,7 +98,7 @@ class ProcessImproved:
                         self.oks.clear()
 
                         # if process has not received any oks, and time has expired, then itself becomes coordinator
-                        if self.current_coordinator == -1:
+                        if self.current_coordinator == self._id:
                             self.current_coordinator = self._id
                             self.state = COORDINATOR
 
@@ -127,7 +127,7 @@ class ProcessImproved:
     def start_election(self):
         """Send election msg to processes with higher id's"""
         self.election_start_time = time.time()
-        self.current_coordinator = -1
+        self.current_coordinator = self._id
         self.coordinator_msg_sent = False
         higher_priority_processes = [
             process for process in self.processes if process.get_id() > self._id]
