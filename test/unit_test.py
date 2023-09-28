@@ -5,8 +5,6 @@ from bully_orginal import ProcessOriginal
 from bully_improved import ProcessImproved
 from types_ import *
 
-
-
 class TestBullyOriginal(unittest.TestCase):
     """Test the methods in bully_original.py"""
     def setUp(self) -> None:
@@ -56,8 +54,8 @@ class TestBullyOriginal(unittest.TestCase):
         """Test enqueue_message() method"""
         for i in range(self.N):
             process = self.all_processes[i]
-            process.enqueue_message(i, "msg_type")
-            self.assertEqual(process.message_queue.get(), ("msg_type", i))
+            process.enqueue_message(i, "TYPE")
+            self.assertEqual(process.message_queue.get(), ("TYPE", i))
 
     def test_send_coordinator(self):
         """Test send_coordinator() method"""
@@ -131,8 +129,8 @@ class TestBullyImproved(unittest.TestCase):
         """Test enqueue_message() method"""
         for i in range(self.N):
             process = self.all_processes[i]
-            process.enqueue_message(i, "msg_type")
-            self.assertEqual(process.message_queue.get(), ("msg_type", i))
+            process.enqueue_message(i, "TYPE")
+            self.assertEqual(process.message_queue.get(), ("TYPE", i))
 
     def test_send_coordinator(self):
         """Test send_coordinator() method"""
