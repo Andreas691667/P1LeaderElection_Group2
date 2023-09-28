@@ -29,7 +29,6 @@ class ProcessOriginal:
         """Kill the process by setting state and stopiing worker thread"""
         self.state = DEAD
         self.stop_worker.set()
-        # print(f"{self._id} is dead \n")
 
     def get_id(self):
         """Get process id"""

@@ -9,8 +9,6 @@ from types_ import *
 
 class TestBullyOriginal(unittest.TestCase):
     """Test the methods in bully_original.py"""
-    # create N processes and put them in a list
-
     def setUp(self) -> None:
         self.N = 10
         self.all_processes = []
@@ -28,6 +26,19 @@ class TestBullyOriginal(unittest.TestCase):
     def tearDown(self) -> None:
         for p in self.all_processes:
             p.kill()
+
+    def test_init(self):
+        """Test the init method"""
+        for i in range(self.N):
+            process = self.all_processes[i]
+            self.assertEqual(process._id, i)
+            self.assertEqual(process.state, IDLE)
+            self.assertEqual(process.processes, self.all_processes)
+            self.assertEqual(process.oks, 0)
+            self.assertFalse(process.coordinator_msg_sent)
+            self.assertFalse(process.election_msg_sent)
+            self.assertEqual(process.msg_count, 0)
+            self.assertIsNone(process.coordinator)
 
     def test_get_id(self):
         """Test get_id() method"""
@@ -59,8 +70,12 @@ class TestBullyOriginal(unittest.TestCase):
                              (1, self.N-1))
             self.assertEqual(process.state, IDLE)
 
-# TODO: Are we able to write test for the 'start_election()' method?
-
+    def test_kill(self):
+        """Test kill() method"""
+        process = self.all_processes[0]
+        process.kill()
+        self.assertEqual(process.state, DEAD)
+        self.assertTrue(process.stop_worker.is_set())
 
 # unit tests for the methods in 'bully_improved.py'
 class TestBullyImproved(unittest.TestCase):
@@ -84,6 +99,21 @@ class TestBullyImproved(unittest.TestCase):
         for p in self.all_processes:
             p.kill()
         
+    def test_init(self):
+        """Test the init method"""
+        for i in range(self.N):
+            process = self.all_processes[i]
+            self.assertEqual(process._id, i)
+            self.assertEqual(process.state, IDLE)
+            self.assertEqual(process.processes, self.all_processes)
+            self.assertEqual(process.oks, [])
+            self.assertFalse(process.coordinator_msg_sent)
+            self.assertFalse(process.election_msg_sent)
+            self.assertEqual(process.msg_count, 0)
+            self.assertEqual(process.current_coordinator, 0)
+            self.assertFalse(process.election_in_progess)
+            self.assertEqual(process.current_coordinator, 0)
+            self.assertEqual(process.election_start_time, 0)
 
     def test_get_id(self):
         """Test get_id() method"""
@@ -114,6 +144,13 @@ class TestBullyImproved(unittest.TestCase):
             self.assertEqual(process.message_queue.get(),
                              (1, self.N-1))
             self.assertEqual(process.state, IDLE)
+
+    def test_kill(self):
+        """Test kill() method"""
+        process = self.all_processes[0]
+        process.kill()
+        self.assertEqual(process.state, DEAD)
+        self.assertTrue(process.stop_worker.is_set())
 
 
 if __name__ == '__main__':
