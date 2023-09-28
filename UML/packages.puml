@@ -1,0 +1,13 @@
+@startuml packages
+set namespaceSeparator none
+package "src" as src {
+}
+package "src.bully_improved" as src.bully_improved {
+}
+package "src.bully_orginal" as src.bully_orginal {
+}
+package "src.tempCodeRunnerFile" as src.tempCodeRunnerFile {
+}
+package "src.types_" as src.types_ {
+}
+@enduml

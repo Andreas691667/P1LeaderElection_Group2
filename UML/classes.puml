@@ -1,0 +1,53 @@
+@startuml classes
+set namespaceSeparator none
+class "ProcessImproved" as src.bully_improved.ProcessImproved {
+  _id
+  coordinator_msg_sent : bool
+  current_coordinator : int
+  election_in_progess : bool
+  election_msg_sent : bool
+  election_start_time : int
+  message_queue : PriorityQueue
+  message_thread : Thread
+  msg_count : int
+  oks : list
+  processes : list
+  state
+  stop_worker : Event
+  __init__(_id)
+  enqueue_message(sender_id, msg_type)
+  get_id()
+  get_process(_id)
+  kill()
+  message_handler(process_id, msg_type)
+  send_coordinator()
+  start_election()
+  start_thread()
+  state_machine()
+}
+class "ProcessOriginal" as src.bully_orginal.ProcessOriginal {
+  _id
+  coordinator : NoneType
+  coordinator_msg_sent : bool
+  election_msg_sent : bool
+  message_queue : Queue
+  message_thread : Thread
+  msg_count : int
+  oks : int
+  processes : list
+  state
+  stop_worker : Event
+  __init__(_id)
+  enqueue_message(sender_id, msg_type)
+  get_id()
+  get_process(_id)
+  kill()
+  message_handler(process_id, msg_type)
+  send_coordinator()
+  start_election()
+  start_thread()
+  state_machine()
+}
+@enduml
+
+
