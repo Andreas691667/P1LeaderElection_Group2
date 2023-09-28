@@ -63,10 +63,8 @@ class ProcessOriginal:
         """"Handle message from another process"""
         # respond to election message by sending OK
         if msg_type == ELECTION:
-            print(f"{self._id} received election from {process_id} \n")
             process = self.get_process(process_id)
             process.enqueue_message(self._id, OK)
-            print(f"{self._id} sent OK to {process_id} \n")
             if not self.election_msg_sent:
                 self.start_election()
                 self.election_msg_sent = True
@@ -74,12 +72,9 @@ class ProcessOriginal:
         # respond to OK message by incrementing OK count
         elif msg_type == OK:
             self.oks += 1
-            print(
-                f"{self._id} received OK from {process_id} and current oks is {self.oks} \n")
-
+            
         # accept coordinator message and do nothing
         elif msg_type == I_AM_COORDINATOR:
-            print(f"{self._id} received coordinator from {process_id} \n")
             self.state = IDLE
             self.coordinator = process_id
 
@@ -113,7 +108,6 @@ class ProcessOriginal:
 
     def send_coordinator(self):
         """Send coordinator message to all processes"""
-        print(f"{self._id} sending coordinator to all processes \n")
         other_processes = [
             process for process in self.processes if process.get_id() != self._id]
         for process in other_processes:
@@ -127,52 +121,6 @@ class ProcessOriginal:
         higher_priority_processes = [
             process for process in self.processes if process.get_id() > self._id]
         for process in higher_priority_processes:
-            print(f"{self._id} sending election to {process.get_id()} \n")
             process.enqueue_message(self._id, ELECTION)
 
         self.state = WAITING_FOR_OK
-
-
-if __name__ == "__main__":
-    # create N processes and put them in a list
-    N = 5
-    all_processes = []
-    for i in range(N):
-        all_processes.append(ProcessOriginal(i))
-
-    # inform each process of all the other all_processes by adding them to the process list and remove self from list
-    # pass them as references to each process
-    for i in range(N):
-        all_processes[i].processes = all_processes
-
-    # set process N as coordinator
-    # all_processes[N-1].state = COORDINATOR
-
-    # start all all_processes
-    for p in all_processes:
-        p.start_thread()
-
-    # start election at highest priority process
-    # all_processes[N-1].start_election()
-
-    # all_processes[N-1].state = COORDINATOR
-
-    # wait for convergence
-    # time.sleep(2)
-    # simulate process failure and new election
-    # all_processes[4].kill()           # process 2 dies
-    time.sleep(2)
-    all_processes[0].start_election()  # process 1 starts election
-
-    # wait for 5 seconds and then stop all all_processes
-    start = time.sleep(5)
-
-    msg_count = 0
-    for p in all_processes:
-        msg_count += p.msg_count
-        p.stop_worker.set()
-
-    print(f"Total messages sent: {msg_count}")
-
-    # while True:
-    #     pass
