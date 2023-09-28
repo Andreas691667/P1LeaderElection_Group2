@@ -22,7 +22,7 @@ I_AM_COORDINATOR = 1
 YOU_ARE_COORDINATOR = 4
 
 
-class Process:
+class ProcessImproved:
     """Processes in the system"""
 
     def __init__(self, _id):
@@ -86,6 +86,7 @@ class Process:
         # accept coordinator message and do nothing
         elif msg_type == I_AM_COORDINATOR:
             print(f"{self._id} received I_AM_COORDINATOR from {process_id} \n")
+            self.current_coordinator = process_id
             self.state = IDLE
 
         elif msg_type == YOU_ARE_COORDINATOR:
@@ -167,7 +168,7 @@ if __name__ == "__main__":
     N = 5
     all_processes = []
     for i in range(N):
-        all_processes.append(Process(i))
+        all_processes.append(ProcessImproved(i))
 
     # inform each process of all the other all_processes by adding them to the process list and remove self from list
     # pass them as references to each process

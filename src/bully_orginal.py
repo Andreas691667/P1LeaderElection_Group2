@@ -18,9 +18,9 @@ WAITING_FOR_COORDINATOR = 5
 # Message types
 ELECTION = 2
 OK = 3
-COORDINATOR = 1
+I_AM_COORDINATOR = 1
 
-class Process:
+class ProcessOriginal:
     """Processes in the system"""
 
     def __init__(self, _id):
@@ -34,6 +34,7 @@ class Process:
         self.coordinator_msg_sent = False
         self.election_msg_sent = False
         self.msg_count = 0  # number of messages sent, metric for performance
+        self.coordinator = None
 
     def start_thread(self):
         """Start the message handler thread"""
@@ -43,7 +44,7 @@ class Process:
         """Kill the process by setting state and stopiing worker thread"""
         self.state = DEAD
         self.stop_worker.set()
-        print(f"{self._id} is dead \n")
+        # print(f"{self._id} is dead \n")
 
     def get_id(self):
         """Get process id"""
@@ -77,9 +78,10 @@ class Process:
                 f"{self._id} received OK from {process_id} and current oks is {self.oks} \n")
 
         # accept coordinator message and do nothing
-        elif msg_type == COORDINATOR:
+        elif msg_type == I_AM_COORDINATOR:
             print(f"{self._id} received coordinator from {process_id} \n")
             self.state = IDLE
+            self.coordinator = process_id
 
     def state_machine(self):
         """State machine for process. Worker method"""
@@ -105,10 +107,6 @@ class Process:
                     else:
                         self.send_coordinator()
 
-                # if state is ELECTING, start election
-                elif self.state == ELECTING:
-                    self.start_election()
-
             # if message queue is not empty, handle message
             else:
                 self.message_handler(process_id, msg_type)
@@ -119,7 +117,7 @@ class Process:
         other_processes = [
             process for process in self.processes if process.get_id() != self._id]
         for process in other_processes:
-            process.enqueue_message(self._id, COORDINATOR)
+            process.enqueue_message(self._id, I_AM_COORDINATOR)
         self.coordinator_msg_sent = True
         self.state = COORDINATOR
 
@@ -140,7 +138,7 @@ if __name__ == "__main__":
     N = 5
     all_processes = []
     for i in range(N):
-        all_processes.append(Process(i))
+        all_processes.append(ProcessOriginal(i))
 
     # inform each process of all the other all_processes by adding them to the process list and remove self from list
     # pass them as references to each process
