@@ -6,7 +6,6 @@ import time
 from types_ import *
 
 
-
 class ProcessImproved:
     """Processes in the system"""
 

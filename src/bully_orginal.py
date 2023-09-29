@@ -5,6 +5,7 @@ from queue import Empty, Queue
 from types_ import *
 import time
 
+
 class ProcessOriginal:
     """Processes in the system"""
 
@@ -56,7 +57,7 @@ class ProcessOriginal:
         # respond to OK message by incrementing OK count
         elif msg_type == OK:
             self.oks += 1
-            
+
         # accept coordinator message and do nothing
         elif msg_type == I_AM_COORDINATOR:
             self.state = NORMAL
