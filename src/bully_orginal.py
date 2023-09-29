@@ -78,8 +78,8 @@ class ProcessOriginal:
                 elif self.state == COORDINATOR:
                     if not self.coordinator_msg_sent:
                         self.send_coordinator()
-                # if state is WAITING_FOR_OK, check if OK count is > 0, if so, change state to NORMAL, else send coordinator message
-                # TODO: Maybe this is superfluous, since we change state to NORMAL when we receive OK message but this is not ideal
+                # if state is WAITING_FOR_OK, check if OK count is > 0.
+                # If so, change state to NORMAL, else send coordinator message
                 elif self.state == WAITING_FOR_OK:
                     if self.oks > 0:
                         self.oks = 0
