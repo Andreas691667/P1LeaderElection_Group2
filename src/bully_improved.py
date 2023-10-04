@@ -65,6 +65,7 @@ class ProcessImproved:
         elif msg_type == I_AM_COORDINATOR:
             self.current_coordinator = process_id
             self.state = NORMAL
+            self.election_in_progess = False
 
         elif msg_type == YOU_ARE_COORDINATOR:
             self.current_coordinator = self._id
