@@ -1,10 +1,10 @@
-from bully_improved import ProcessImproved
-from bully_orginal import ProcessOriginal
 import unittest
-from time import sleep, time
-from types_ import *
 import sys
 sys.path.insert(0, "./src")
+from time import sleep
+from types_ import *
+from bully_improved import ProcessImproved
+from bully_orginal import ProcessOriginal
 
 
 class SystemTestsOriginal(unittest.TestCase):

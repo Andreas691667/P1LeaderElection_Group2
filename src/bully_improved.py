@@ -16,7 +16,7 @@ class ProcessImproved:
         self._id = _id
         self.state = NORMAL  # initial state
         self.processes = []
-        self.oks = []  # vector oks: Each entry is an id corresponding to a OK from that process
+        self.oks = 0  # vector oks: Each entry is an id corresponding to a OK from that process
         self.coordinator_msg_sent = False
         self.election_msg_sent = False
         self.msg_count = 0  # number of messages sent, metric for performance
@@ -57,7 +57,7 @@ class ProcessImproved:
 
         # respond to OK message by incrementing OK count
         elif msg_type == OK:
-            self.oks.append(process_id)
+            self.oks += 1
             if process_id > self.current_coordinator:
                 self.current_coordinator = process_id
 
@@ -93,10 +93,10 @@ class ProcessImproved:
                     time_expired = time_passed > THRESHOLD
 
                     # Pick new coordinator
-                    if len(self.oks) == len(self.processes)-self._id+1 or time_expired:      
+                    if self.oks == len(self.processes)-self._id+1 or time_expired:      
 
                         # if process has not received any oks, and time has expired, then itself becomes coordinator
-                        if len(self.oks) == 0:
+                        if self.oks == 0:
                             self.current_coordinator = self._id
                             self.state = COORDINATOR
 
@@ -109,7 +109,7 @@ class ProcessImproved:
                                 self._id, YOU_ARE_COORDINATOR)
                             self.state = WAITING_FOR_COORDINATOR
 
-                        self.oks.clear()
+                        self.oks = 0
             # if message queue is not empty, handle message
             else:
                 self.message_handler(process_id, msg_type)
