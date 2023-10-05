@@ -22,7 +22,7 @@ class ProcessImproved:
         self.msg_count = 0  # number of messages sent, metric for performance
         # Improved bully attributes
         self.election_in_progess = False
-        self.current_coordinator = 0
+        self.current_coordinator = -1
         self.election_start_time = 0
 
     def start_thread(self):
@@ -68,7 +68,6 @@ class ProcessImproved:
             self.election_in_progess = False
 
         elif msg_type == YOU_ARE_COORDINATOR:
-            # self.current_coordinator = self._id 
             self.start_election()   #perform cross check
 
     def state_machine(self):
@@ -94,8 +93,7 @@ class ProcessImproved:
                     time_expired = time_passed > THRESHOLD
 
                     # Pick new coordinator
-                    if len(self.oks) == len(self.processes)-self._id+1 or time_expired:
-                        
+                    if len(self.oks) == len(self.processes)-self._id+1 or time_expired:      
 
                         # if process has not received any oks, and time has expired, then itself becomes coordinator
                         if len(self.oks) == 0:
