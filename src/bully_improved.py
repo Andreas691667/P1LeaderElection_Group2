@@ -68,7 +68,7 @@ class ProcessImproved:
             self.election_in_progess = False
 
         elif msg_type == YOU_ARE_COORDINATOR:
-            self.current_coordinator = self._id
+            # self.current_coordinator = self._id
             self.start_election()
 
     def state_machine(self):
