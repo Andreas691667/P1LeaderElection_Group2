@@ -68,8 +68,8 @@ class ProcessImproved:
             self.election_in_progess = False
 
         elif msg_type == YOU_ARE_COORDINATOR:
-            self.current_coordinator = self._id 
-            self.start_election()
+            # self.current_coordinator = self._id 
+            self.start_election()   #perform cross check
 
     def state_machine(self):
         """State machine for process. Worker method"""
@@ -94,11 +94,11 @@ class ProcessImproved:
                     time_expired = time_passed > THRESHOLD
 
                     # Pick new coordinator
-                    if len(self.oks) == len(self.processes)-self._id or time_expired:
-                        self.oks.clear()
+                    if len(self.oks) == len(self.processes)-self._id+1 or time_expired:
+                        
 
                         # if process has not received any oks, and time has expired, then itself becomes coordinator
-                        if self.current_coordinator == self._id:
+                        if len(self.oks) == 0:
                             self.current_coordinator = self._id
                             self.state = COORDINATOR
 
@@ -111,6 +111,7 @@ class ProcessImproved:
                                 self._id, YOU_ARE_COORDINATOR)
                             self.state = WAITING_FOR_COORDINATOR
 
+                        self.oks.clear()
             # if message queue is not empty, handle message
             else:
                 self.message_handler(process_id, msg_type)
