@@ -6,8 +6,6 @@ import unittest
 from bully_orginal import ProcessOriginal
 from bully_improved import ProcessImproved
 
-
-
 class SystemTestsOriginal(unittest.TestCase):
     """Testing simulations of the bully algorithm"""
 
