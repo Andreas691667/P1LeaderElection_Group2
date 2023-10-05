@@ -21,6 +21,7 @@ class ProcessOriginal:
         self.election_msg_sent = False
         self.msg_count = 0  # number of messages sent, metric for performance
         self.coordinator = None
+        self.election_start_time = 0
 
     def start_thread(self):
         """Start the message handler thread"""
@@ -62,6 +63,7 @@ class ProcessOriginal:
         elif msg_type == I_AM_COORDINATOR:
             self.state = NORMAL
             self.coordinator = process_id
+            self.election_msg_sent = False
 
     def state_machine(self):
         """State machine for process. Worker method"""
@@ -81,11 +83,16 @@ class ProcessOriginal:
                 # if state is WAITING_FOR_OK, check if OK count is > 0.
                 # If so, change state to NORMAL, else send coordinator message
                 elif self.state == WAITING_FOR_OK:
+                    time_passed = time.time() - self.election_start_time
+                    time_expired = time_passed > THRESHOLD
+
                     if self.oks > 0:
                         self.oks = 0
                         self.state = WAITING_FOR_COORDINATOR
-                    else:
+                    elif time_expired:
                         self.send_coordinator()
+                    else:
+                        pass
 
             # if message queue is not empty, handle message
             else:
@@ -103,9 +110,11 @@ class ProcessOriginal:
     # Starts an election
     def start_election(self):
         """Send election msg to processes with higher id's"""
+        self.election_start_time = time.time()
         higher_priority_processes = [
             process for process in self.processes if process.get_id() > self._id]
         for process in higher_priority_processes:
             process.enqueue_message(self._id, ELECTION)
 
+        self.election_msg_sent = True
         self.state = WAITING_FOR_OK
