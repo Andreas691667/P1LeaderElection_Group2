@@ -108,9 +108,8 @@ class TestBullyImproved(unittest.TestCase):
             self.assertFalse(process.coordinator_msg_sent)
             self.assertFalse(process.election_msg_sent)
             self.assertEqual(process.msg_count, 0)
-            self.assertEqual(process.current_coordinator, 0)
+            self.assertEqual(process.current_coordinator, -1)
             self.assertFalse(process.election_in_progess)
-            self.assertEqual(process.current_coordinator, 0)
             self.assertEqual(process.election_start_time, 0)
 
     def test_get_id(self):
